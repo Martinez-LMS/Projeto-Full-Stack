@@ -1,78 +1,121 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const atividadeInicial = {
+    id: 0,
+    titulo: '',
+    prioridade: 0,
+    descricao: '',
+};
 
 export default function AtividadeForm(props) {
-  const getNextId = () => {
-    return Math.max(0, ...props.atividades.map((item) => item.id)) + 1;
-  };
-  const [atividade, setAtividade] = useState({
-    id: getNextId(),
-    prioridade: '',
-    descricao: '',
-    titulo: ''
-  });
+    const [atividade, setAtividade] = useState(atividadeAtual());
 
-  const inputTextHandler = (e) => {
-    const { name, value } = e.target;
-    setAtividade({ ...atividade, [name]: value });
-  };
+    useEffect(() => {
+        if (props.ativSelecionada.id !== 0) setAtividade(props.ativSelecionada);
+    }, [props.ativSelecionada]);
 
-  return (
-    <div>
-      <form className="row g-3" onSubmit={props.addAtividade}>
-        <div className="col-md-6">
-          <label htmlFor="id" className="form-label">ID</label>
-          <input
-            name='id'
-            id="id"
-            type="text"
-            className="form-control"
-            onChange={inputTextHandler}
-            value={atividade.id}
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="prioridade" className="form-label">Prioridade</label>
-          <select
-            id="prioridade"
-            name="prioridade"
-            className="form-select"
-            onChange={inputTextHandler}
-            value={atividade.prioridade}
-          >
-            <option value="0">Selecione...</option>
-            <option value="1">Baixa</option>
-            <option value="2">Normal</option>
-            <option value="3">Alta</option>
-          </select>
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="descricao" className="form-label">Descrição</label>
-          <input
-            name='descricao'
-            id="descricao"
-            type="text"
-            className="form-control"
-            onChange={inputTextHandler}
-            value={atividade.descricao}
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="titulo" className="form-label">Título</label>
-          <input
-            name='titulo'
-            id="titulo"
-            type="text"
-            className="form-control"
-            onChange={inputTextHandler}
-            value={atividade.titulo}
-          />
-        </div>
-        <div className="col-12">
-          <button type="submit" className="btn btn-outline-secondary">
-            + Atividade
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+    const inputTextHandler = (e) => {
+        const { name, value } = e.target;
+
+        setAtividade({ ...atividade, [name]: value });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (props.ativSelecionada.id !== 0) props.atualizarAtividade(atividade);
+        else props.addAtividade(atividade);
+
+        setAtividade(atividadeInicial);
+    };
+
+    const handleCancelar = (e) => {
+        e.preventDefault();
+
+        props.cancelarAtividade();
+
+        setAtividade(atividadeInicial);
+    };
+
+    function atividadeAtual() {
+        if (props.ativSelecionada.id !== 0) {
+            return props.ativSelecionada;
+        } else {
+            return atividadeInicial;
+        }
+    }
+
+    return (
+        <>
+            <h1>Atividade {atividade.id !== 0 ? atividade.id : ''}</h1>
+            <form className='row g-3' onSubmit={handleSubmit}>
+                <div className='col-md-6'>
+                    <label className='form-label'>Título</label>
+                    <input
+                        name='titulo'
+                        value={atividade.titulo}
+                        onChange={inputTextHandler}
+                        id='titulo'
+                        type='text'
+                        className='form-control'
+                    />
+                </div>
+                <div className='col-md-6'>
+                    <label className='form-label'>Prioridade</label>
+                    <select
+                        name='prioridade'
+                        value={atividade.prioridade}
+                        onChange={inputTextHandler}
+                        id='prioridade'
+                        className='form-select'
+                    >
+                        <option defaultValue='0'>Selecione...</option>
+                        <option value='1'>Baixa</option>
+                        <option value='2'>Normal</option>
+                        <option value='3'>Alta</option>
+                    </select>
+                </div>
+                <div className='col-md-12'>
+                    <label className='form-label'>Descrição</label>
+                    <textarea
+                        name='descricao'
+                        value={atividade.descricao}
+                        onChange={inputTextHandler}
+                        id='descricao'
+                        type='text'
+                        className='form-control'
+                    />
+                <hr />
+                </div>
+                <div className='col-12 mt-0'>
+                    {atividade.id === 0 ? (
+                        <button
+                            className='btn btn-outline-secondary'
+                            type='submit'
+                        >
+                            <i className='fas fa-plus me-2'></i>
+                            Atividade
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                className='btn btn-outline-success me-2'
+                                type='submit'
+                            >
+                                <i className='fas fa-plus me-2'></i>
+                                Salvar
+                            </button>
+                            <button
+                                className='btn btn-outline-warning'
+                                onClick={handleCancelar}
+                            >
+                                <i className='fas fa-plus me-2'></i>
+                                Cancelar
+                            </button>
+                        </>
+                    )}
+                </div>
+            </form>
+        </>
+    );
 }
